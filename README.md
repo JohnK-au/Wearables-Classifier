@@ -1,4 +1,4 @@
-# imu-exercise-classifier
+# Wearables-classifier
 
 A machine learning pipeline that classifies weight lifting exercises from wearable IMU and heart rate data.
 
