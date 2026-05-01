@@ -1,28 +1,28 @@
 # Wearables-classifier
 
-A machine learning pipeline that classifies weight lifting exercises from wearable IMU and heart rate data.
+A machine learning pipeline that classifies physical activities from wearable IMU and heart rate data.
 
 ## What this is
 
-I built this to explore how well off-the-shelf wearable sensors can identify what exercise someone is doing from raw motion and physiological data alone. The pipeline ingests accelerometer, gyroscope, and heart rate signals, segments them into short windows, extracts time and frequency domain features, and trains a classifier with leave-one-subject-out cross-validation so the reported scores reflect generalisation to a new wearer rather than memorisation of the training cohort.
+I built this to explore how well off-the-shelf wearable sensors can identify what someone is doing from raw motion and physiological data alone. The pipeline ingests accelerometer, gyroscope, and heart rate signals, segments them into short windows, extracts time and frequency domain features, and trains a classifier with leave-one-subject-out cross-validation so the reported scores reflect generalisation to a new wearer rather than memorisation of the training cohort.
 
 ## Why this is interesting (the biomechanics bit)
 
-Each weight lifting movement has a distinctive motion signature. A squat is dominated by a vertical hip translation at roughly 0.5 to 1 Hz with low rotational velocity. A shoulder press shows a vertical acceleration profile concentrated in the upper limb, with a clear eccentric and concentric tempo. A bicep curl is mostly elbow flexion, so gyroscope energy spikes on a single rotational axis. Those differences live in measurable places:
+Every physical activity has a distinctive motion signature. Walking is a clean periodic gait at roughly 1.5 to 2 Hz with most energy on the vertical axis. Running pushes that cadence up to 2.5 to 3 Hz and adds a much larger peak-to-peak amplitude. Cycling shows almost no body acceleration but heavy lower-limb rotation. Sitting and standing are nearly stationary in acceleration but distinguishable by orientation. Those differences live in measurable places:
 
 - **Time domain**: peak-to-peak amplitude, RMS, zero crossing rate (a tempo proxy), skewness and kurtosis of the signal distribution.
-- **Frequency domain**: dominant frequency (rep cadence), spectral entropy (smoothness vs. jitter), low-band energy concentration (slow, deliberate movement vs. ballistic).
-- **Heart rate**: rises with metabolic demand, helping separate compound from isolation work.
+- **Frequency domain**: dominant frequency (gait or rep cadence), spectral entropy (smoothness vs. jitter), low-band energy concentration (slow, deliberate movement vs. ballistic).
+- **Heart rate**: rises with metabolic demand, helping separate low-intensity activities (sitting, ironing) from high-intensity ones (running, rope jumping) when the motion signatures look similar.
 
-Hand-crafting features that map onto those properties keeps the model interpretable, which matters when I want to be able to explain to a coach (or a startup) why a prediction was made.
+Hand-crafting features that map onto those properties keeps the model interpretable, which matters when I want to be able to explain to a coach why a prediction was made.
 
 ## Dataset
 
-I use the **RecGym** dataset from the UCI Machine Learning Repository (id 1128). It contains accelerometer, gyroscope, and heart rate recordings from subjects performing a labelled set of gym exercises.
+I use the **PAMAP2 Physical Activity Monitoring** dataset from the UCI Machine Learning Repository (id 231). It contains accelerometer, gyroscope, and heart rate recordings from 9 subjects performing 12 labelled activities, including everyday motion (walking, sitting, standing, cycling), household tasks (ironing, vacuuming), and exercise (running, Nordic walking, rope jumping).
 
-> Koskimäki, H., Siirtola, P., & Röning, J. (2017). RecGym: Activity recognition data of gym exercises. UCI Machine Learning Repository. https://archive.ics.uci.edu/dataset/1128
+> Reiss, A. & Stricker, D. (2012). PAMAP2 Physical Activity Monitoring. UCI Machine Learning Repository. https://archive.ics.uci.edu/dataset/231
 
-Activity ID 0 represents transient periods between sets and is dropped during cleaning so the model is only ever shown labelled exercise samples.
+Activity ID 0 represents transient periods between activities and is dropped during cleaning so the model is only ever shown labelled samples.
 
 ## Results
 
@@ -36,11 +36,11 @@ Placeholder. I will fill these in once I run the full pipeline end to end on the
 ## Project layout
 
 ```
-imu-exercise-classifier/
+wearables-classifier/
 ├── data/
 │   ├── raw/                  # Source files, never modified
 │   ├── processed/            # Cleaned and feature-extracted outputs
-│   └── download_data.py      # Pulls RecGym into data/raw/
+│   └── download_data.py      # Pulls PAMAP2 into data/raw/
 ├── notebooks/
 │   ├── 01_eda.ipynb
 │   ├── 02_feature_engineering.ipynb
@@ -63,7 +63,7 @@ imu-exercise-classifier/
 ```bash
 # 1. Clone and enter the repo
 git clone <this-repo>
-cd imu-exercise-classifier
+cd wearables-classifier
 
 # 2. Create and activate a virtual environment
 python -m venv .venv
@@ -74,7 +74,7 @@ source .venv/Scripts/activate     # Git Bash on Windows
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Download the dataset
+# 4. Download the dataset (~656 MB ZIP, takes a few minutes)
 python data/download_data.py
 
 # 5. Run the tests

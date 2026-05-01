@@ -36,3 +36,10 @@ Thumbs.db
 # Private notes (not for the public repo)
 NOTES.md
 CLAUDE.md
+
+# Reference solutions (kept locally for self-comparison while learning)
+**/_*_reference.py
+**/_*_reference.ipynb
+
+# Personal workflow checklist
+WORKFLOW.md

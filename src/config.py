@@ -17,23 +17,23 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 @dataclass
 class Config:
     # Sampling and windowing.
-    SAMPLE_RATE: int = 100          # Hz, RecGym is recorded at 100 Hz.
-    WINDOW_SIZE: int = 100          # Samples per window (1 second at 100 Hz).
+    SAMPLE_RATE: int = 100         # Hz, PAMAP2 IMU sample rate.
+    WINDOW_SIZE: int = 100         # Samples per window (1 second at 100 Hz).
     OVERLAP: float = 0.5            # Fraction of window shared with the next.
 
-    # Sensor channels we extract features from.
-    # Adjust these to match the column names produced by data/download_data.py
-    # after inspecting the dataset in 01_eda.ipynb.
+    # Sensor channels we extract features from. PAMAP2 wraps wrist-mounted
+    # accelerometer + gyroscope under the 'hand' prefix. Heart rate is the
+    # second physiological channel.
     FEATURE_COLS: List[str] = field(default_factory=lambda: [
-        "acc_x", "acc_y", "acc_z",
-        "gyr_x", "gyr_y", "gyr_z",
-        "hr",
+        "hand_acc16_x", "hand_acc16_y", "hand_acc16_z",
+        "hand_gyro_x",  "hand_gyro_y",  "hand_gyro_z",
+        "heart_rate",
     ])
 
     # Column names used in the raw dataframe.
     LABEL_COL: str = "activity_id"
     SUBJECT_COL: str = "subject_id"
-    TRANSIENT_LABEL: int = 0        # Activity id used for between-set periods.
+    TRANSIENT_LABEL: int = 0        # PAMAP2 codes 'other (transient activities)' as 0.
 
     # Model hyperparameters.
     MODEL_PARAMS: Dict[str, dict] = field(default_factory=lambda: {
