@@ -1,2 +1,2 @@
-"""imu-exercise-classifier: classify weight lifting exercises from IMU + HR data."""
+"""wearables-classifier: classify physical activities from IMU + HR data."""
 __version__ = "0.1.0"

@@ -19,10 +19,9 @@ Each .dat file has 54 unnamed columns (one row per sample at 100 Hz):
     IMU chest:  same 17 columns
     IMU ankle:  same 17 columns
 
-We keep only the columns that map onto our pipeline (matching the RecGym
-schema we originally designed for): wrist accelerometer + gyroscope + heart
-rate, plus subject_id (from the filename) and activity_id. Everything else
-is dropped to keep the CSV under a few hundred megabytes.
+We keep only the columns the pipeline actually uses: wrist accelerometer +
+gyroscope + heart rate, plus subject_id (from the filename) and activity_id.
+Everything else is dropped to keep the CSV under a few hundred megabytes.
 
 Run from the project root:
     python data/download_data.py

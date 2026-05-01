@@ -1,4 +1,4 @@
-"""Central configuration for the imu-exercise-classifier pipeline.
+"""Central configuration for the wearables-classifier pipeline.
 
 Single source of truth for sampling parameters, feature columns, model
 hyperparameters, and on-disk locations. Every other module reads from CONFIG
