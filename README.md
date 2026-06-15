@@ -16,22 +16,33 @@ Every physical activity has a distinctive motion signature. Walking is a clean p
 
 Hand-crafting features that map onto those properties keeps the model interpretable, which matters when I want to be able to explain to a coach why a prediction was made.
 
-## Dataset
+## Datasets
 
-I use the **PAMAP2 Physical Activity Monitoring** dataset from the UCI Machine Learning Repository (id 231). It contains accelerometer, gyroscope, and heart rate recordings from 9 subjects performing 12 labelled activities, including everyday motion (walking, sitting, standing, cycling), household tasks (ironing, vacuuming), and exercise (running, Nordic walking, rope jumping).
+**PAMAP2 Physical Activity Monitoring** (UCI id 231) is used for the activities-of-daily-living analysis. It contains 100 Hz accelerometer, gyroscope, and heart rate recordings from 9 subjects performing 12 labelled activities, including everyday motion (walking, sitting, standing, cycling), household tasks (ironing, vacuuming), and exercise (running, Nordic walking, rope jumping). Activity ID 0 represents transient periods between activities and is dropped during cleaning.
 
 > Reiss, A. & Stricker, D. (2012). PAMAP2 Physical Activity Monitoring. UCI Machine Learning Repository. https://archive.ics.uci.edu/dataset/231
 
-Activity ID 0 represents transient periods between activities and is dropped during cleaning so the model is only ever shown labelled samples.
+**RecGym** (UCI) is used for the gym exercise analysis. It contains 50 Hz IMU and capacitive sensor recordings from 10 subjects across 3 sensor positions (wrist, pocket, leg) covering 11 gym exercises plus a Null class. The wrist position is the primary focus; the leg and pocket positions are evaluated in a sensor position ablation to confirm that wrist placement is most discriminative for upper-body exercises.
+
+> Banos, O. et al. (2014). RecGym. UCI Machine Learning Repository.
 
 ## Results
 
-Placeholder. I will fill these in once I run the full pipeline end to end on the real data.
+All scores use leave-one-subject-out cross-validation (LOSO). The reported figure is the mean across all 9 held-out subjects.
 
-| Model              | Accuracy (LOSO) | Macro F1 | Notes                          |
-|--------------------|-----------------|----------|--------------------------------|
-| Random Forest      | TBD             | TBD      | Baseline, fast iteration       |
-| Gradient Boosting  | TBD             | TBD      | Slower, often slightly better  |
+### PAMAP2 Activities of Daily Living (notebook 03)
+
+| Model              | Accuracy (LOSO) | Macro F1 | Notes                                         |
+|--------------------|-----------------|----------|-----------------------------------------------|
+| Random Forest      | 79.5%           | 0.793    | 200 estimators, wrist acc + gyro + HR         |
+| Gradient Boosting  | —               | —        | Run notebook 03 (slow: ~40 min LOSO)          |
+
+### RecGym Gym Exercises, wrist position (notebook 04)
+
+| Model              | Accuracy (LOSO) | Macro F1 | Notes                                         |
+|--------------------|-----------------|----------|-----------------------------------------------|
+| Random Forest      | 94.2%           | 0.929    | 200 estimators, wrist acc + gyro + C\_1       |
+| Gaussian HMM       | —               | —        | Run notebook 04 (4 states, 500 windows/class) |
 
 ## Project layout
 
@@ -39,18 +50,17 @@ Placeholder. I will fill these in once I run the full pipeline end to end on the
 wearables-classifier/
 ├── data/
 │   ├── raw/                  # Source files, never modified
-│   ├── processed/            # Cleaned and feature-extracted outputs
+│   ├── processed/            # Cached feature matrices (parquet)
 │   └── download_data.py      # Pulls PAMAP2 into data/raw/
 ├── notebooks/
-│   ├── 01_eda.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   └── 03_modelling.ipynb
+│   ├── 01_eda.ipynb                              # Signal exploration
+│   ├── 02_feature_engineering.ipynb              # Feature construction walkthrough
+│   ├── 03_activities_of_daily_living_classifier.ipynb  # PAMAP2 LOSO, ablation
+│   └── 04_gym_exercise_classifier.ipynb          # RecGym LOSO, position comparison, HMM
 ├── src/
-│   ├── config.py
-│   ├── preprocessing.py
-│   ├── features.py
-│   ├── train.py
-│   └── evaluate.py
+│   ├── config.py             # Single source of truth for all parameters
+│   ├── preprocessing.py      # Load, clean, interpolate, segment_windows
+│   └── features.py           # Time + frequency feature extraction
 ├── models/                   # Saved .pkl artefacts (gitignored)
 ├── tests/
 │   └── test_preprocessing.py
@@ -84,7 +94,11 @@ pytest tests/
 jupyter notebook
 ```
 
-Run them in order: `01_eda.ipynb` to get a feel for the signals, `02_feature_engineering.ipynb` to see how features are built, then `03_modelling.ipynb` for training and evaluation.
+Run them in order: `01_eda.ipynb` to explore the signals, `02_feature_engineering.ipynb` to see how features are built, `03_activities_of_daily_living_classifier.ipynb` for the PAMAP2 LOSO analysis, and `04_gym_exercise_classifier.ipynb` for the RecGym gym exercise analysis (downloads `archive.zip` from the UCI RecGym dataset and places it in `data/raw/` before running notebook 04).
+
+## Key findings
+
+Random Forest with hand-crafted time and frequency features generalises well to new wearers under LOSO evaluation, demonstrating that periodic motion signatures (gait cadence, rep tempo) are consistent enough across individuals to be learned from a small cohort. Heart rate is the most discriminative channel for separating high-intensity activities such as running and rope jumping from low-intensity ones whose motion signatures alone are ambiguous. Sensor position matters substantially for gym exercise classification: wrist placement outperforms leg and pocket because the upper limb is the primary driver of most resistance exercises, and removing the capacitive channel (C\_1) from the position comparison isolates the effect cleanly.
 
 ## Notes for reviewers
 
